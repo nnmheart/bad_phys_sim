@@ -1,0 +1,4 @@
+*.exe
+src/old_perlin.c
+src/vector.c
+includes/vector.h
