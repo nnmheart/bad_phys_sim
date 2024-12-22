@@ -1,6 +1,7 @@
 #pragma once
 #include<stdbool.h>
 #include<SDL2/SDL.h>
+#include<SDL2/SDL_ttf.h>
 #include<point.h>
 
 #define print(...) printf("[%s]: ", __func__); printf(__VA_ARGS__);
@@ -16,4 +17,6 @@ typedef struct App {
 
     int screen_width;
     int screen_height;
+
+    TTF_Font* font;
 } App;

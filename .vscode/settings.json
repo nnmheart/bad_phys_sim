@@ -1,6 +1,7 @@
 {
     "files.associations": {
         "cmath": "c",
-        "*.tcc": "c"
+        "*.tcc": "c",
+        "sdl_ttf.h": "c"
     }
 }

@@ -4,6 +4,7 @@
 #include<math.h>
 #include<malloc.h>
 #include<SDL2/SDL.h>
+#include<SDL2/SDL_ttf.h>
 #include<point.h>
 #include<app.h>
 
@@ -36,6 +37,10 @@ void app_init_sdl() {
     if (app->renderer == NULL) {
         print("SDL Error: %s\n", SDL_GetError());
         exit(1);    
+    }
+    if (TTF_Init() != 0) {
+        print("SDL Error: %s\n", SDL_GetError());
+        exit(1);
     }
 }
 
@@ -110,6 +115,49 @@ void app_update() {
     }
 }
 
+SDL_Color white = {255, 255, 255};
+void render_text(int x, int y, int w, int h, char* text) {
+    SDL_Renderer* renderer = app->renderer;
+    SDL_Surface* surface = TTF_RenderText_Solid(app->font, text, white);
+    SDL_Texture* Message = SDL_CreateTextureFromSurface(renderer, surface);
+    SDL_Rect Message_rect; //create a rect
+    Message_rect.x = x;  //controls the rect's x coordinate 
+    Message_rect.y = y; // controls the rect's y coordinte
+    Message_rect.w = w; // controls the width of the rect
+    Message_rect.h = h; // controls the height of the rect
+    SDL_RenderCopy(renderer, Message, NULL, &Message_rect);
+    SDL_DestroyTexture(Message);
+    SDL_FreeSurface(surface);
+}
+
+void write_details_about_point(Point p) {
+    char buffer[100];
+    
+    int x = (int)p.pos.x;
+    int y = (int)p.pos.y;
+    int r = (int)p.radius;
+    int line_size = 20;
+
+    int text_x = x + r;
+    int text_y = y;
+
+    while ((text_y + 4 * line_size) > app->screen_height) {
+        text_y -= line_size;
+    } 
+    while ((text_x + 60) > app->screen_width) {
+        text_x -= 60;
+    }
+
+    sprintf(buffer, "x: %i", x);
+    render_text(text_x, text_y, 35, line_size, buffer);
+    sprintf(buffer, "y: %i", y);
+    render_text(text_x, text_y + line_size, 35, line_size, buffer);
+    sprintf(buffer, "mass: %d", (int)p.mass);
+    render_text(text_x, text_y + 2 * line_size, 60, line_size, buffer);
+    sprintf(buffer, "charge: %d", (int)p.charge);
+    render_text(text_x, text_y + 3 * line_size, 60, line_size, buffer);
+}
+
 void app_render() {
     SDL_Renderer* renderer = app->renderer;
     SDL_SetRenderDrawColor(
@@ -155,6 +203,9 @@ void app_render() {
         arrow_points[1].x = (int)(p.pos.x + 100 * p.disp.x);
         arrow_points[1].y = (int)(p.pos.y + 100 * p.disp.y);
         SDL_RenderDrawLines(renderer, arrow_points, 2);
+
+
+        write_details_about_point(p);
     }
 
 }
@@ -291,10 +342,17 @@ int main(int argc, char* args[]) {
     app->used_points = 0;
     app->max_points = 100;
     app->points = (Point*) malloc(sizeof(Point) * app->max_points);
+    app_init_sdl();
+
+    app->font = TTF_OpenFont("OpenSans-Regular.ttf", 30);
+
+    if (app->font == NULL) {
+        printf("[SDL Error]: %s\n", SDL_GetError());
+        return 1;
+    }
 
     read_from_file();
 
-    app_init_sdl();
     print("Initialized SDL.\n");
     print("Entering mainloop.\n");
     app_loop();
